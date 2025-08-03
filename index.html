@@ -144,27 +144,46 @@
     );
   </script>
 
-  <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyGB13vdfU6qDOzLPqLI8Cx3vuM3T6LS7LAvExLQAS2kMCkH9QXmGDfQ8wSsrvxmags/exec';
-    const form = document.forms['submit-to-google-sheet'];
-    const loading = document.querySelector('.js-loading');
-    const successMessage = document.querySelector('.js-success-message');
-    const errorMessage = document.querySelector('.js-error-message');
+<script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbyGB13vdfU6qDOzLPqLI8Cx3vuM3T6LS7LAvExLQAS2kMCkH9QXmGDfQ8wSsrvxmags/exec';
+  const form = document.forms['submit-to-google-sheet'];
+  const loading = document.querySelector('.js-loading');
+  const successMessage = document.querySelector('.js-success-message');
+  const errorMessage = document.querySelector('.js-error-message');
 
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      form.classList.add('is-hidden');
-      loading.classList.remove('is-hidden');
-      fetch(scriptURL, { method: 'POST', body: new FormData(form) })
-        .then(response => {
-          loading.classList.add('is-hidden');
-          successMessage.classList.remove('is-hidden');
-        })
-        .catch(error => {
-          loading.classList.add('is-hidden');
-          errorMessage.classList.remove('is-hidden');
-        });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    form.classList.add('is-hidden');
+    loading.classList.remove('is-hidden');
+
+    fetch(scriptURL, {
+      method: 'POST',
+      body: new FormData(form)
+    })
+    .then(response => {
+      loading.classList.add('is-hidden');
+      successMessage.classList.remove('is-hidden');
+
+      form.reset();
+      validateConfirmations(); // Re-disable submit button
+
+      setTimeout(() => {
+        form.classList.remove('is-hidden');
+        successMessage.classList.add('is-hidden');
+      }, 3000);
+    })
+    .catch(error => {
+      loading.classList.add('is-hidden');
+      errorMessage.classList.remove('is-hidden');
+
+      setTimeout(() => {
+        form.classList.remove('is-hidden');
+        errorMessage.classList.add('is-hidden');
+      }, 3000);
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
