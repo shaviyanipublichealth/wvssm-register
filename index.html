@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registration for WVSSM</title>
+
+  <!-- Required for PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon-192.png" type="image/png">
+
+  <!-- CSS Libraries -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+
+  <style>
+    .is-hidden {
+      display: none !important;
+    }
+
+    .loading-spinner svg {
+      width: 50px;
+      height: 50px;
+      stroke: #007bff;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .is-invalid {
+      border-color: #dc3545 !important;
+      background-color: #fff0f0;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8 col-sm-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+
+            <div class="d-flex justify-content-center align-items-center mb-4 gap-2 flex-wrap">
+              <div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" stroke="#007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <circle cx="12" cy="7" r="4"/>
+                  <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
+                </svg>
+              </div>
+              <div class="text-center">
+                <h4 class="mb-1">Registration for WVSSM</h4>
+                <small class="text-muted d-block">(Web-based Vaccination Supplies Stock Management)</small>
+              </div>
+            </div>
+
+            <form name="submit-to-google-sheet" id="registrationForm">
+              <div class="mb-3">
+                <label for="idNumber" class="form-label">ID Number</label>
+                <input type="text" class="form-control" id="idNumber" name="idNumber" required autocomplete="off">
+              </div>
+
+              <div class="mb-3">
+                <label for="confirmIdNumber" class="form-label">Confirm ID Number</label>
+                <input type="text" class="form-control" id="confirmIdNumber" required autocomplete="off" onpaste="return false;">
+              </div>
+
+              <div class="mb-3">
+                <label for="firstName" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="firstName" name="firstName" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lastName" name="lastName" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="jobTitle" class="form-label">Job Title</label>
+                <select id="jobTitle" name="jobTitle" placeholder="Select or type a job title..." autocomplete="off"></select>
+              </div>
+
+              <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone" name="phone" required autocomplete="off">
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="confirmEmail" class="form-label">Confirm Email</label>
+                <input type="email" class="form-control" id="confirmEmail" required onpaste="return false;">
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>Submit</button>
+            </form>
+
+            <div class="loading js-loading is-hidden text-center my-3">
+              <div class="loading-spinner">
+                <svg><circle cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke-miterlimit="10"/></svg>
+              </div>
+            </div>
+
+            <p class="js-success-message text-success text-center is-hidden">✅ Form submitted successfully!</p>
+            <p class="js-error-message text-danger text-center is-hidden">❌ Submission failed. Please try again.</p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+  <!-- Job Title Fetch -->
+  <script>
+    fetch('https://script.google.com/macros/s/AKfycbwDSXKAUOg-PR1FUqZNTNEU1vFpn4Letcp7KGxdJLfZxb1xNVQ7hun4NPWwQIa1WhZu/exec')
+      .then(res => res.json())
+      .then(jobTitles => {
+        const options = jobTitles.map(title => ({ value: title, text: title }));
+        new TomSelect('#jobTitle', {
+          options: options,
+          create: true,
+          sortField: { field: "text", direction: "asc" }
+        });
+      })
+      .catch(() => {
+        new TomSelect('#jobTitle', { create: true });
+      });
+  </script>
+
+  <!-- Form Validation -->
+  <script>
+    const idInput = document.getElementById('idNumber');
+    const confirmIdInput = document.getElementById('confirmIdNumber');
+    const emailInput = document.getElementById('email');
+    const confirmEmailInput = document.getElementById('confirmEmail');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function validateConfirmations() {
+      const idMatch = idInput.value === confirmIdInput.value;
+      const emailMatch = emailInput.value === confirmEmailInput.value;
+
+      confirmIdInput.classList.toggle('is-invalid', !idMatch);
+      confirmEmailInput.classList.toggle('is-invalid', !emailMatch);
+
+      submitBtn.disabled = !(idMatch && emailMatch);
+    }
+
+    [idInput, confirmIdInput, emailInput, confirmEmailInput].forEach(input => {
+      input.addEventListener('input', validateConfirmations);
+    });
+  </script>
+
+  <!-- Form Submission -->
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwvI20Y_Tdzi3dE5p0eBARxxcEMUQ9YFNPD1PEhjbmkt0-mH6sg-yIQGWOVe_pr5QlK/exec';
+    const form = document.forms['submit-to-google-sheet'];
+    const loading = document.querySelector('.js-loading');
+    const successMessage = document.querySelector('.js-success-message');
+    const errorMessage = document.querySelector('.js-error-message');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      form.classList.add('is-hidden');
+      loading.classList.remove('is-hidden');
+
+      fetch(scriptURL, {
+        method: 'POST',
+        body: new FormData(form)
+      })
+        .then(() => {
+          loading.classList.add('is-hidden');
+          successMessage.classList.remove('is-hidden');
+
+          form.reset();
+          validateConfirmations();
+
+          setTimeout(() => {
+            form.classList.remove('is-hidden');
+            successMessage.classList.add('is-hidden');
+          }, 3000);
+        })
+        .catch(() => {
+          loading.classList.add('is-hidden');
+          errorMessage.classList.remove('is-hidden');
+
+          setTimeout(() => {
+            form.classList.remove('is-hidden');
+            errorMessage.classList.add('is-hidden');
+          }, 3000);
+        });
+    });
+  </script>
+
+  <!-- iOS Install Prompt (Only on iPhone/iPad) -->
+  <div id="iosInstallPrompt" class="alert alert-info text-center mb-0 py-2" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: #e3f2fd; border: none; border-top: 2px solid #2196f3;">
+    <p class="mb-1">
+      <strong>Install WVSSM</strong><br>
+      Tap the <strong>📤 Share</strong> icon, then <strong>"Add to Home Screen"</strong>
+    </p>
+    <button type="button" class="btn btn-sm btn-outline-primary" onclick="closeIosPrompt()">Maybe Later</button>
+  </div>
+
+  <!-- Desktop/Android Install Button -->
+  <button id="installButton" class="btn btn-success" style="display: none; position: fixed; right: 20px; bottom: 20px; z-index: 9999; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 16px;">
+    📲 Install WVSSM App
+  </button>
+
+  <!-- Service Worker Registration -->
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW registration failed:', err));
+      });
+    }
+  </script>
+
+  <!-- Install Logic -->
+  <script>
+    let deferredPrompt;
+
+    // Show iOS hint only on iPhone/iPad
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const iosPrompt = document.getElementById('iosInstallPrompt');
+
+    if (isIOS && !isStandalone && !localStorage.getItem('ios-install-dismissed')) {
+      iosPrompt.style.display = 'block';
+    }
+
+    function closeIosPrompt() {
+      iosPrompt.style.display = 'none';
+      localStorage.setItem('ios-install-dismissed', 'true');
+    }
+
+    // Show install button on Android/PC when installable
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installButton').style.display = 'block';
+    });
+
+    document.getElementById('installButton')?.addEventListener('click', () => {
+      if (deferredPrompt) {
+        document.getElementById('installButton').style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+        });
+      }
+    });
+
+    // Hide button if already installed
+    window.addEventListener('appinstalled', () => {
+      document.getElementById('installButton').style.display = 'none';
+      deferredPrompt = null;
+      console.log('WVSSM was installed');
+    });
+  </script>
+</body>
+</html>
