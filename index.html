@@ -211,5 +211,46 @@
     localStorage.setItem('install-prompt-dismissed', 'true');
   }
 </script>
+  <!-- Install Button for Desktop/Android -->
+<button id="installButton" class="btn btn-success fixed-bottom m-3" style="display: none; position: fixed; right: 0; z-index: 1000;">
+  📲 Install WVSSM App
+</button>
+
+<script>
+  let deferredPrompt;
+
+  // Listen for the install prompt
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e; // Store the event
+
+    // Show our custom install button
+    document.getElementById('installButton').style.display = 'block';
+  });
+
+  // Handle custom button click
+  document.getElementById('installButton')?.addEventListener('click', () => {
+    if (deferredPrompt) {
+      document.getElementById('installButton').style.display = 'none';
+      deferredPrompt.prompt(); // Show browser install prompt
+
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User installed the app');
+        } else {
+          console.log('User declined');
+        }
+        deferredPrompt = null;
+      });
+    }
+  });
+
+  // Optional: Hide button if app is already installed
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('installButton').style.display = 'none';
+    deferredPrompt = null;
+    console.log('WVSSM was installed');
+  });
+</script>
 </body>
 </html>
