@@ -184,6 +184,28 @@
     });
   });
 </script>
+<!-- Add this just before </body> -->
+<div id="installPrompt" class="alert alert-info text-center is-hidden">
+  <p>Want to install WVSSM? Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>.</p>
+  <button class="btn btn-sm btn-close" onclick="closeInstallPrompt()"></button>
+</div>
 
+<script>
+  // Hide prompt if already installed or dismissed
+  const installPrompt = document.getElementById('installPrompt');
+
+  // Check if app is installed or launched
+  if (window.matchMedia('(display-mode: standalone)').matches || 
+      window.navigator.standalone) {
+    // App is installed
+  } else if (!localStorage.getItem('install-prompt-dismissed')) {
+    installPrompt.classList.remove('is-hidden');
+  }
+
+  function closeInstallPrompt() {
+    installPrompt.classList.add('is-hidden');
+    localStorage.setItem('install-prompt-dismissed', 'true');
+  }
+</script>
 </body>
 </html>
