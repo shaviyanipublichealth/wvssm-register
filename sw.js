@@ -1,4 +1,5 @@
-const CACHE_NAME = 'wvssm-cache-v2'; // Bumped version
+// Cache version – bump this when you update assets
+const CACHE_NAME = 'wvssm-cache-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -12,43 +13,61 @@ const urlsToCache = [
   'https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js'
 ];
 
+// IMPORTANT: Clean any accidental whitespace in URLs
+const cleanedUrls = urlsToCache.map(url => url.trim());
+
 self.addEventListener('install', event => {
+  // Cache all critical assets during install
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+      .then(cache => cache.addAll(cleanedUrls))
       .catch(err => console.error('Cache failed during install:', err))
   );
 });
 
 self.addEventListener('activate', event => {
+  // Clean up old caches
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(key => key !== CACHE_NAME)
-            .map(key => caches.delete(key))
-      )
-    )
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames
+          .filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
+      );
+    })
   );
-  self.clients.claim(); // Take control immediately
+
+  // Take control of all clients (pages) immediately
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
   const { request } = event;
 
-  // Skip non-GET requests (e.g., POST to Google Apps Script)
+  // === 1. Don't cache non-GET requests (e.g. form submission to Google Sheets)
   if (request.method !== 'GET') {
     event.respondWith(fetch(request));
     return;
   }
 
-  // Try cache first, fallback to network
+  // === 2. Try cache first, fallback to network
   event.respondWith(
-    caches.match(request).then(cached => {
-      return cached || fetch(request).catch(() => {
-        // Fallback: return index.html for navigation requests
+    caches.match(request).then(cachedResponse => {
+      // Return cached version if available
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      // Otherwise, go to network
+      return fetch(request).then(networkResponse => {
+        // Optionally cache new responses (advanced)
+        return networkResponse;
+      }).catch(() => {
+        // === 3. Fallback for navigation (HTML pages)
         if (request.mode === 'navigate') {
           return caches.match('/index.html');
         }
+        // For other assets (images, CSS, JS), return nothing = fail gracefully
       });
     })
   );
