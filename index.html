@@ -184,26 +184,30 @@
     });
   });
 </script>
-<!-- Add this just before </body> -->
-<div id="installPrompt" class="alert alert-info text-center is-hidden">
-  <p>Want to install WVSSM? Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>.</p>
-  <button class="btn btn-sm btn-close" onclick="closeInstallPrompt()"></button>
+<!-- Add this just before </body>, above your other scripts -->
+<div id="installPrompt" class="alert alert-info text-center mb-0 py-2" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; border-radius: 0;">
+  <p class="mb-1">
+    <strong>Install WVSSM</strong><br>
+    Tap the <strong>Share</strong> icon and select <strong>"Add to Home Screen"</strong> for quick access!
+  </p>
+  <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="closeInstallPrompt()">Maybe Later</button>
 </div>
 
 <script>
-  // Hide prompt if already installed or dismissed
   const installPrompt = document.getElementById('installPrompt');
 
-  // Check if app is installed or launched
-  if (window.matchMedia('(display-mode: standalone)').matches || 
-      window.navigator.standalone) {
-    // App is installed
-  } else if (!localStorage.getItem('install-prompt-dismissed')) {
-    installPrompt.classList.remove('is-hidden');
+  // Show prompt only on iOS/iPhone & not in standalone mode
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+  if (isIOS && !isStandalone) {
+    if (!localStorage.getItem('install-prompt-dismissed')) {
+      installPrompt.style.display = 'block'; // Show prompt
+    }
   }
 
   function closeInstallPrompt() {
-    installPrompt.classList.add('is-hidden');
+    installPrompt.style.display = 'none';
     localStorage.setItem('install-prompt-dismissed', 'true');
   }
 </script>
