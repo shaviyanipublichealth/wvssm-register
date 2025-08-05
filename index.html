@@ -120,7 +120,7 @@
 
   <!-- Job Title Fetch -->
   <script>
-    fetch('https://script.google.com/macros/s/AKfycbwDSXKAUOg-PR1FUqZNTNEU1vFpn4Letcp7KGxdJLfZxb1xNVQ7hun4NPWwQIa1WhZu/exec')
+    fetch('https://script.google.com/macros/s/AKfycbwkDj8HnORE3rOZU6VyyOAmF0KtboWknmW_AsqY_80U4oKpy2T1V_ZWEWKOJ2TqO0U/exec')
       .then(res => res.json())
       .then(jobTitles => {
         const options = jobTitles.map(title => ({ value: title, text: title }));
@@ -160,7 +160,7 @@
 
   <!-- Form Submission -->
   <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwvI20Y_Tdzi3dE5p0eBARxxcEMUQ9YFNPD1PEhjbmkt0-mH6sg-yIQGWOVe_pr5QlK/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwkDj8HnORE3rOZU6VyyOAmF0KtboWknmW_AsqY_80U4oKpy2T1V_ZWEWKOJ2TqO0U/exec';
     const form = document.forms['submit-to-google-sheet'];
     const loading = document.querySelector('.js-loading');
     const successMessage = document.querySelector('.js-success-message');
